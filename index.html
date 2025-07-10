@@ -1,38 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Pong Game</title>
-    <style>
-      canvas {
-        background: black;
-        display: block;
-        margin: 50px auto;
-      }
-      #controls {
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          margin-top: 10px;
-      }
-      #controls button {
-          font-size: 2rem;     /* lekker groot */
-          padding: 20px 30px;
-          border-radius: 10px;
-          user-select: none;   /* geen tekstselectie */
-      }
-    </style>
+<meta charset="UTF-8">
+<title>Pong Game</title>
+<style>
+  /* === Layout === */
+  #gameWrapper{
+    position: relative;           /* referentiekader voor absolute elementen */
+    width: 400px;
+    margin: 50px auto;           /* mooi in het midden van de pagina */
+  }
+  canvas{
+    background:black;
+    display:block;
+    width:100%;                  /* zodat wrapperbreedte = canvasbreedte */
+    height:auto;
+  }
+
+  /* === Knoppen === */
+  .ctrlBtn{
+    position:absolute;
+    top:50%;                     /* verticaal midden */
+    transform:translateY(-50%);  /* exacte centrering */
+    font-size:2rem;
+    padding:20px 30px;
+    border-radius:10px;
+    user-select:none;
+    cursor:pointer;
+  }
+  #btnUp  { left:-80px; }        /* ruimte links van het canvas */
+  #btnDown{ right:-80px; }       /* ruimte rechts van het canvas */
+
+  /* Kleine verbetering voor touchscreen‑gebruikers */
+  @media (hover:none){
+    .ctrlBtn{padding:30px 40px;}
+  }
+</style>
 </head>
 <body>
 
+  <div id="gameWrapper">
     <canvas id="pong" width="400" height="300"></canvas>
-    
-    <div id="controls">
-        <button id="btnUp">⬆️</button>
-        <button id="btnDown">⬇️</button>
-    </div>
 
-    <script>
+    <!-- ⬅️ linkerkant = omhoog, ➡️ rechterkant = omlaag -->
+    <button id="btnUp"   class="ctrlBtn">⬆️</button>
+    <button id="btnDown" class="ctrlBtn">⬇️</button>
+  </div>
+
+<script>
         const canvas = document.getElementById("pong");
         const ctx = canvas.getContext("2d");
 
@@ -168,50 +183,28 @@
                 player.dy = 0;
             }
         });
+       
+    /*#region KNOP‑EVENTS*/
+const btnUp   = document.getElementById("btnUp");
+const btnDown = document.getElementById("btnDown");
 
-        // Knoppen ophalen
-        const btnUp = document.getElementById("btnUp");
-        const btnDown = document.getElementById("btnDown");
+function startMove(dy){ player.dy = dy; }
+function stopMove(){ player.dy = 0; }
 
-        // Als je de knop ingedrukt houdt, wil je continu bewegen.
-        // Daarom zetten we dy wanneer de muis ingedrukt wordt
-        // en resetten we dy wanneer de muis losgelaten wordt.
+btnUp  .addEventListener("mousedown", () => startMove(-5));
+btnDown.addEventListener("mousedown", () => startMove( 5));
+btnUp  .addEventListener("mouseup",   stopMove);
+btnDown.addEventListener("mouseup",   stopMove);
 
-        btnUp.addEventListener("mousedown", () => {
-            player.dy = -5;
-        });
-        btnDown.addEventListener("mousedown", () => {
-            player.dy = 5;
-        });
-
-        // Wanneer je loslaat, stopt de paddle
-        btnUp.addEventListener("mouseup", () => {
-            player.dy = 0;
-        });
-        btnDown.addEventListener("mouseup", () => {
-            player.dy = 0;
-        });
-
-        // Touch‑ondersteuning voor mobiel
-        btnUp.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            player.dy = -5;
-        });
-        btnDown.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            player.dy = 5;
-        });
-        btnUp.addEventListener("touchend", () => {
-            player.dy = 0;
-        });
-        btnDown.addEventListener("touchend", () => {
-            player.dy = 0;
-        });
-
-        ["touchend", "touchcancel"].forEach(evt => {
-            btnUp.addEventListener(evt, () => player.dy = 0);
-            btnDown.addEventListener(evt, () => player.dy = 0);
-        });
-    </script>
+["touchstart"].forEach(ev=>{
+  btnUp  .addEventListener(ev,e=>{e.preventDefault();startMove(-5);});
+  btnDown.addEventListener(ev,e=>{e.preventDefault();startMove( 5);});
+});
+["touchend","touchcancel"].forEach(ev=>{
+  btnUp  .addEventListener(ev,stopMove);
+  btnDown.addEventListener(ev,stopMove);
+});
+/*#endregion*/
+</script>
 </body>
 </html>
